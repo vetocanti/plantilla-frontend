@@ -1,815 +1,979 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orbit AI | Chatbots, MCP y Agentes Inteligentes</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #07111f;
-      --bg-soft: #0d1b30;
-      --surface: rgba(13, 27, 48, 0.74);
-      --surface-strong: rgba(11, 22, 39, 0.95);
-      --text: #ecf4ff;
-      --muted: #9bb1c9;
-      --primary: #79f2c0;
-      --secondary: #ffb84d;
-      --accent: #7dd3fc;
-      --line: rgba(255, 255, 255, 0.08);
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-      --radius: 24px;
-      --max-width: 1180px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      font-family: "Manrope", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(125, 211, 252, 0.18), transparent 32%),
-        radial-gradient(circle at 85% 15%, rgba(255, 184, 77, 0.18), transparent 24%),
-        radial-gradient(circle at 20% 80%, rgba(121, 242, 192, 0.14), transparent 26%),
-        linear-gradient(160deg, #030814 0%, #07111f 48%, #0a1830 100%);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 44px 44px;
-      mask-image: radial-gradient(circle at center, black 45%, transparent 85%);
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .container {
-      width: min(calc(100% - 2rem), var(--max-width));
-      margin: 0 auto;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      backdrop-filter: blur(14px);
-      background: rgba(4, 10, 20, 0.58);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 1rem 0;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-      font-family: "Space Grotesk", sans-serif;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
-
-    .brand-mark {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background:
-        linear-gradient(135deg, rgba(121, 242, 192, 0.25), rgba(125, 211, 252, 0.1)),
-        rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(121, 242, 192, 0.25);
-      box-shadow: inset 0 0 24px rgba(121, 242, 192, 0.12);
-    }
-
-    .brand-mark span {
-      font-size: 1.15rem;
-      color: var(--primary);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .nav-links a:hover {
-      color: var(--text);
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-      padding: 0.95rem 1.35rem;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      font-weight: 800;
-      transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
-    }
-
-    .button:hover {
-      transform: translateY(-2px);
-    }
-
-    .button-primary {
-      background: linear-gradient(135deg, var(--primary), #a5f3fc);
-      color: #031018;
-      box-shadow: 0 14px 36px rgba(121, 242, 192, 0.22);
-    }
-
-    .button-secondary {
-      border-color: rgba(255, 255, 255, 0.12);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-    }
-
-    .hero {
-      padding: 5.5rem 0 3rem;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 2rem;
-      align-items: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.5rem 0.8rem;
-      border-radius: 999px;
-      border: 1px solid rgba(125, 211, 252, 0.2);
-      background: rgba(125, 211, 252, 0.08);
-      color: #c8ecff;
-      font-size: 0.85rem;
-      letter-spacing: 0.02em;
-    }
-
-    h1,
-    h2,
-    h3 {
-      font-family: "Space Grotesk", sans-serif;
-      margin: 0;
-      line-height: 1.05;
-    }
-
-    h1 {
-      margin-top: 1.25rem;
-      font-size: clamp(3rem, 8vw, 5.8rem);
-      max-width: 12ch;
-    }
-
-    .hero-copy p {
-      margin: 1.4rem 0 0;
-      max-width: 58ch;
-      font-size: 1.08rem;
-      line-height: 1.75;
-      color: var(--muted);
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    .hero-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-top: 2.4rem;
-    }
-
-    .stat {
-      min-width: 160px;
-      padding: 1rem 1.1rem;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--line);
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 1.5rem;
-      font-family: "Space Grotesk", sans-serif;
-    }
-
-    .stat span {
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    .hero-card {
-      position: relative;
-      padding: 1.35rem;
-      border-radius: 30px;
-      background: linear-gradient(180deg, rgba(13, 27, 48, 0.92), rgba(8, 16, 29, 0.9));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .hero-card::after {
-      content: "";
-      position: absolute;
-      inset: auto -15% -30% auto;
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(121, 242, 192, 0.24), transparent 68%);
-      pointer-events: none;
-    }
-
-    .window-bar {
-      display: flex;
-      gap: 0.45rem;
-      margin-bottom: 1rem;
-    }
-
-    .window-bar span {
-      width: 0.8rem;
-      height: 0.8rem;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.18);
-    }
-
-    .panel {
-      padding: 1rem;
-      border-radius: 22px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.03);
-      margin-bottom: 0.9rem;
-    }
-
-    .panel small {
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.7rem;
-    }
-
-    .panel h3 {
-      margin-top: 0.7rem;
-      font-size: 1.15rem;
-    }
-
-    .panel p {
-      margin: 0.65rem 0 0;
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 0.95rem;
-    }
-
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 1rem;
-    }
-
-    .chip {
-      padding: 0.6rem 0.8rem;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      color: #dce9f9;
-      font-size: 0.82rem;
-    }
-
-    section {
-      padding: 2.5rem 0;
-    }
-
-    .section-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .section-heading p {
-      max-width: 60ch;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1.2rem;
-    }
-
-    .feature-card,
-    .info-card,
-    .pricing-card,
-    .testimonial,
-    .cta-box {
-      position: relative;
-      overflow: hidden;
-      padding: 1.4rem;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: var(--surface);
-      backdrop-filter: blur(12px);
-    }
-
-    .feature-card::before,
-    .info-card::before,
-    .pricing-card::before,
-    .testimonial::before,
-    .cta-box::before {
-      content: "";
-      position: absolute;
-      inset: 0 auto auto 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(121, 242, 192, 0.7), transparent 70%);
-      opacity: 0.5;
-    }
-
-    .icon-badge {
-      width: 54px;
-      height: 54px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, rgba(121, 242, 192, 0.18), rgba(255, 184, 77, 0.16));
-      color: var(--primary);
-      font-family: "Space Grotesk", sans-serif;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    .feature-card h3,
-    .info-card h3,
-    .pricing-card h3,
-    .testimonial h3 {
-      font-size: 1.25rem;
-      margin-bottom: 0.8rem;
-    }
-
-    .feature-card p,
-    .info-card p,
-    .pricing-card p,
-    .testimonial p,
-    .cta-box p {
-      color: var(--muted);
-      line-height: 1.7;
-      margin: 0;
-    }
-
-    .split-grid {
-      display: grid;
-      grid-template-columns: 0.95fr 1.05fr;
-      gap: 1.2rem;
-    }
-
-    .stack {
-      display: grid;
-      gap: 1.2rem;
-    }
-
-    .info-card strong {
-      display: inline-block;
-      margin-top: 1rem;
-      color: var(--secondary);
-      font-size: 0.95rem;
-    }
-
-    .journey {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1rem;
-    }
-
-    .step {
-      padding: 1.25rem;
-      border-radius: 22px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--line);
-    }
-
-    .step span {
-      display: inline-block;
-      margin-bottom: 0.8rem;
-      color: var(--accent);
-      font-size: 0.84rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .step h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.65rem;
-    }
-
-    .step p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.65;
-      font-size: 0.95rem;
-    }
-
-    .pricing-card.featured {
-      background:
-        linear-gradient(180deg, rgba(121, 242, 192, 0.12), rgba(13, 27, 48, 0.86)),
-        var(--surface);
-      transform: translateY(-8px);
-    }
-
-    .price {
-      margin: 1rem 0;
-      font-family: "Space Grotesk", sans-serif;
-      font-size: 2.6rem;
-    }
-
-    .price span {
-      font-size: 1rem;
-      color: var(--muted);
-    }
-
-    .list {
-      display: grid;
-      gap: 0.75rem;
-      margin: 1.2rem 0 1.5rem;
-      color: #d9e5f5;
-    }
-
-    .list div::before {
-      content: "+";
-      color: var(--primary);
-      margin-right: 0.55rem;
-    }
-
-    .testimonial strong {
-      display: inline-block;
-      margin-top: 1rem;
-      color: var(--text);
-    }
-
-    .cta-box {
-      display: grid;
-      grid-template-columns: 1.1fr auto;
-      gap: 1rem;
-      align-items: center;
-      padding: 1.8rem;
-      background:
-        radial-gradient(circle at top right, rgba(255, 184, 77, 0.16), transparent 26%),
-        radial-gradient(circle at bottom left, rgba(121, 242, 192, 0.14), transparent 24%),
-        var(--surface-strong);
-    }
-
-    footer {
-      padding: 1rem 0 2.5rem;
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
-    .fade-up {
-      opacity: 0;
-      transform: translateY(24px);
-      animation: fadeUp 0.8s ease forwards;
-    }
-
-    .fade-delay-1 { animation-delay: 0.12s; }
-    .fade-delay-2 { animation-delay: 0.24s; }
-    .fade-delay-3 { animation-delay: 0.36s; }
-
-    @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @media (max-width: 980px) {
-      .hero-grid,
-      .split-grid,
-      .cta-box,
-      .card-grid,
-      .journey {
-        grid-template-columns: 1fr;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orbit AI | Chatbots, MCP y Agentes Inteligentes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #07111f;
+        --bg-soft: #0d1b30;
+        --surface: rgba(13, 27, 48, 0.74);
+        --surface-strong: rgba(11, 22, 39, 0.95);
+        --text: #ecf4ff;
+        --muted: #9bb1c9;
+        --primary: #79f2c0;
+        --secondary: #ffb84d;
+        --accent: #7dd3fc;
+        --line: rgba(255, 255, 255, 0.08);
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+        --radius: 24px;
+        --max-width: 1180px;
       }
 
-      .pricing-card.featured {
-        transform: none;
+      * {
+        box-sizing: border-box;
       }
 
-      .section-heading {
-        align-items: start;
-        flex-direction: column;
+      html {
+        scroll-behavior: smooth;
       }
-    }
 
-    @media (max-width: 700px) {
+      body {
+        margin: 0;
+        font-family: "Manrope", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(125, 211, 252, 0.18),
+            transparent 32%
+          ),
+          radial-gradient(
+            circle at 85% 15%,
+            rgba(255, 184, 77, 0.18),
+            transparent 24%
+          ),
+          radial-gradient(
+            circle at 20% 80%,
+            rgba(121, 242, 192, 0.14),
+            transparent 26%
+          ),
+          linear-gradient(160deg, #030814 0%, #07111f 48%, #0a1830 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 44px 44px;
+        mask-image: radial-gradient(
+          circle at center,
+          black 45%,
+          transparent 85%
+        );
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        width: min(calc(100% - 2rem), var(--max-width));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(14px);
+        background: rgba(4, 10, 20, 0.58);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
       .nav {
-        flex-direction: column;
-        align-items: start;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+      }
+
+      .brand-mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background:
+          linear-gradient(
+            135deg,
+            rgba(121, 242, 192, 0.25),
+            rgba(125, 211, 252, 0.1)
+          ),
+          rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(121, 242, 192, 0.25);
+        box-shadow: inset 0 0 24px rgba(121, 242, 192, 0.12);
+      }
+
+      .brand-mark span {
+        font-size: 1.15rem;
+        color: var(--primary);
       }
 
       .nav-links {
-        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        color: var(--muted);
+        font-size: 0.95rem;
       }
 
-      .hero {
-        padding-top: 3.8rem;
-      }
-
-      h1 {
-        max-width: none;
-      }
-
-      .hero-actions,
-      .hero-stats {
-        flex-direction: column;
+      .nav-links a:hover {
+        color: var(--text);
       }
 
       .button {
-        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.95rem 1.35rem;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-weight: 800;
+        transition:
+          transform 0.25s ease,
+          border-color 0.25s ease,
+          background 0.25s ease;
       }
-    }
-  </style>
-</head>
-<body>
-  <header class="topbar">
-    <div class="container nav">
-      <a href="#" class="brand">
-        <div class="brand-mark"><span>O</span></div>
-        <div>Orbit AI</div>
-      </a>
-      <nav class="nav-links">
-        <a href="#servicios">Servicios</a>
-        <a href="#arquitectura">Arquitectura</a>
-        <a href="#planes">Planes</a>
-        <a href="#contacto">Contacto</a>
-      </nav>
-    </div>
-  </header>
 
-  <main>
-    <section class="hero">
-      <div class="container hero-grid">
-        <div class="hero-copy">
-          <div class="eyebrow fade-up">Infraestructura conversacional para negocios modernos</div>
-          <h1 class="fade-up fade-delay-1">Chatbots, MCP y agentes de IA que si resuelven trabajo real.</h1>
-          <p class="fade-up fade-delay-2">
-            Disenamos experiencias conversacionales conectadas a tus datos, automatizamos procesos y desplegamos agentes capaces de consultar herramientas, ejecutar tareas y responder con contexto util para ventas, soporte y operaciones.
-          </p>
-          <div class="hero-actions fade-up fade-delay-3">
-            <a class="button button-primary" href="#contacto">Solicitar demo</a>
-            <a class="button button-secondary" href="#arquitectura">Ver arquitectura</a>
-          </div>
-          <div class="hero-stats fade-up fade-delay-3">
-            <div class="stat">
-              <strong>24/7</strong>
-              <span>atencion automatizada y escalable</span>
-            </div>
-            <div class="stat">
-              <strong>MCP</strong>
-              <span>conexion segura con herramientas y fuentes</span>
-            </div>
-            <div class="stat">
-              <strong>+3x</strong>
-              <span>mas velocidad en tareas repetitivas</span>
-            </div>
-          </div>
-        </div>
+      .button:hover {
+        transform: translateY(-2px);
+      }
 
-        <aside class="hero-card fade-up fade-delay-2">
-          <div class="window-bar">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <div class="panel">
-            <small>Chatbot Orquestador</small>
-            <h3>Responde, enruta y detecta intencion</h3>
-            <p>Convierte conversaciones en acciones utiles con flujos mas naturales, recuperacion de contexto y respuestas personalizadas.</p>
-          </div>
-          <div class="panel">
-            <small>MCP Layer</small>
-            <h3>Herramientas, APIs y datos en un solo protocolo</h3>
-            <p>Conecta CRM, bases de conocimiento, calendarios, ERPs y repositorios sin encadenar integraciones fragiles.</p>
-            <div class="chip-row">
-              <div class="chip">CRM</div>
-              <div class="chip">Docs</div>
-              <div class="chip">Calendario</div>
-              <div class="chip">ERP</div>
-            </div>
-          </div>
-          <div class="panel">
-            <small>Agentes de IA</small>
-            <h3>Planifican, consultan herramientas y ejecutan tareas</h3>
-            <p>Desde calificar leads hasta crear tickets o preparar reportes, tus agentes trabajan con objetivos y supervision.</p>
-          </div>
-        </aside>
+      .button-primary {
+        background: linear-gradient(135deg, var(--primary), #a5f3fc);
+        color: #031018;
+        box-shadow: 0 14px 36px rgba(121, 242, 192, 0.22);
+      }
+
+      .button-secondary {
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+      }
+
+      .hero {
+        padding: 5.5rem 0 3rem;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid rgba(125, 211, 252, 0.2);
+        background: rgba(125, 211, 252, 0.08);
+        color: #c8ecff;
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: "Space Grotesk", sans-serif;
+        margin: 0;
+        line-height: 1.05;
+      }
+
+      h1 {
+        margin-top: 1.25rem;
+        font-size: clamp(3rem, 8vw, 5.8rem);
+        max-width: 12ch;
+      }
+
+      .hero-copy p {
+        margin: 1.4rem 0 0;
+        max-width: 58ch;
+        font-size: 1.08rem;
+        line-height: 1.75;
+        color: var(--muted);
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 2.4rem;
+      }
+
+      .stat {
+        min-width: 160px;
+        padding: 1rem 1.1rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 1.5rem;
+        font-family: "Space Grotesk", sans-serif;
+      }
+
+      .stat span {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .hero-card {
+        position: relative;
+        padding: 1.35rem;
+        border-radius: 30px;
+        background: linear-gradient(
+          180deg,
+          rgba(13, 27, 48, 0.92),
+          rgba(8, 16, 29, 0.9)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .hero-card::after {
+        content: "";
+        position: absolute;
+        inset: auto -15% -30% auto;
+        width: 240px;
+        height: 240px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(121, 242, 192, 0.24),
+          transparent 68%
+        );
+        pointer-events: none;
+      }
+
+      .window-bar {
+        display: flex;
+        gap: 0.45rem;
+        margin-bottom: 1rem;
+      }
+
+      .window-bar span {
+        width: 0.8rem;
+        height: 0.8rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+
+      .panel {
+        padding: 1rem;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        margin-bottom: 0.9rem;
+      }
+
+      .panel small {
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.7rem;
+      }
+
+      .panel h3 {
+        margin-top: 0.7rem;
+        font-size: 1.15rem;
+      }
+
+      .panel p {
+        margin: 0.65rem 0 0;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 0.95rem;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 1rem;
+      }
+
+      .chip {
+        padding: 0.6rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        color: #dce9f9;
+        font-size: 0.82rem;
+      }
+
+      section {
+        padding: 2.5rem 0;
+      }
+
+      .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .section-heading p {
+        max-width: 60ch;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.2rem;
+      }
+
+      .feature-card,
+      .info-card,
+      .pricing-card,
+      .testimonial,
+      .cta-box {
+        position: relative;
+        overflow: hidden;
+        padding: 1.4rem;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--surface);
+        backdrop-filter: blur(12px);
+      }
+
+      .feature-card::before,
+      .info-card::before,
+      .pricing-card::before,
+      .testimonial::before,
+      .cta-box::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          rgba(121, 242, 192, 0.7),
+          transparent 70%
+        );
+        opacity: 0.5;
+      }
+
+      .icon-badge {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(
+          135deg,
+          rgba(121, 242, 192, 0.18),
+          rgba(255, 184, 77, 0.16)
+        );
+        color: var(--primary);
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+
+      .feature-card h3,
+      .info-card h3,
+      .pricing-card h3,
+      .testimonial h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .feature-card p,
+      .info-card p,
+      .pricing-card p,
+      .testimonial p,
+      .cta-box p {
+        color: var(--muted);
+        line-height: 1.7;
+        margin: 0;
+      }
+
+      .split-grid {
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+        gap: 1.2rem;
+      }
+
+      .stack {
+        display: grid;
+        gap: 1.2rem;
+      }
+
+      .info-card strong {
+        display: inline-block;
+        margin-top: 1rem;
+        color: var(--secondary);
+        font-size: 0.95rem;
+      }
+
+      .journey {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .step {
+        padding: 1.25rem;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+      }
+
+      .step span {
+        display: inline-block;
+        margin-bottom: 0.8rem;
+        color: var(--accent);
+        font-size: 0.84rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .step h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 0.95rem;
+      }
+
+      .pricing-card.featured {
+        background:
+          linear-gradient(
+            180deg,
+            rgba(121, 242, 192, 0.12),
+            rgba(13, 27, 48, 0.86)
+          ),
+          var(--surface);
+        transform: translateY(-8px);
+      }
+
+      .price {
+        margin: 1rem 0;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2.6rem;
+      }
+
+      .price span {
+        font-size: 1rem;
+        color: var(--muted);
+      }
+
+      .list {
+        display: grid;
+        gap: 0.75rem;
+        margin: 1.2rem 0 1.5rem;
+        color: #d9e5f5;
+      }
+
+      .list div::before {
+        content: "+";
+        color: var(--primary);
+        margin-right: 0.55rem;
+      }
+
+      .testimonial strong {
+        display: inline-block;
+        margin-top: 1rem;
+        color: var(--text);
+      }
+
+      .cta-box {
+        display: grid;
+        grid-template-columns: 1.1fr auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 1.8rem;
+        background:
+          radial-gradient(
+            circle at top right,
+            rgba(255, 184, 77, 0.16),
+            transparent 26%
+          ),
+          radial-gradient(
+            circle at bottom left,
+            rgba(121, 242, 192, 0.14),
+            transparent 24%
+          ),
+          var(--surface-strong);
+      }
+
+      footer {
+        padding: 1rem 0 2.5rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .fade-up {
+        opacity: 0;
+        transform: translateY(24px);
+        animation: fadeUp 0.8s ease forwards;
+      }
+
+      .fade-delay-1 {
+        animation-delay: 0.12s;
+      }
+      .fade-delay-2 {
+        animation-delay: 0.24s;
+      }
+      .fade-delay-3 {
+        animation-delay: 0.36s;
+      }
+
+      @keyframes fadeUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .split-grid,
+        .cta-box,
+        .card-grid,
+        .journey {
+          grid-template-columns: 1fr;
+        }
+
+        .pricing-card.featured {
+          transform: none;
+        }
+
+        .section-heading {
+          align-items: start;
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .nav {
+          flex-direction: column;
+          align-items: start;
+        }
+
+        .nav-links {
+          flex-wrap: wrap;
+        }
+
+        .hero {
+          padding-top: 3.8rem;
+        }
+
+        h1 {
+          max-width: none;
+        }
+
+        .hero-actions,
+        .hero-stats {
+          flex-direction: column;
+        }
+
+        .button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav">
+        <a href="#" class="brand">
+          <div class="brand-mark"><span>O</span></div>
+          <div>Orbit AI</div>
+        </a>
+        <nav class="nav-links">
+          <a href="#servicios">Servicios</a>
+          <a href="#arquitectura">Arquitectura</a>
+          <a href="#planes">Planes</a>
+          <a href="#contacto">Contacto</a>
+        </nav>
       </div>
-    </section>
+    </header>
 
-    <section id="servicios">
-      <div class="container">
-        <div class="section-heading">
-          <div>
-            <div class="eyebrow">Que construimos</div>
-            <h2>Una capa completa de automatizacion conversacional</h2>
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow fade-up">
+              Infraestructura conversacional para negocios modernos
+            </div>
+            <h1 class="fade-up fade-delay-1">
+              Chatbots, MCP y agentes de IA que si resuelven trabajo real.
+            </h1>
+            <p class="fade-up fade-delay-2">
+              Disenamos experiencias conversacionales conectadas a tus datos,
+              automatizamos procesos y desplegamos agentes capaces de consultar
+              herramientas, ejecutar tareas y responder con contexto util para
+              ventas, soporte y operaciones.
+            </p>
+            <div class="hero-actions fade-up fade-delay-3">
+              <a class="button button-primary" href="#contacto"
+                >Solicitar demo</a
+              >
+              <a class="button button-secondary" href="#arquitectura"
+                >Ver arquitectura</a
+              >
+            </div>
+            <div class="hero-stats fade-up fade-delay-3">
+              <div class="stat">
+                <strong>24/7</strong>
+                <span>atencion automatizada y escalable</span>
+              </div>
+              <div class="stat">
+                <strong>MCP</strong>
+                <span>conexion segura con herramientas y fuentes</span>
+              </div>
+              <div class="stat">
+                <strong>+3x</strong>
+                <span>mas velocidad en tareas repetitivas</span>
+              </div>
+            </div>
           </div>
-          <p>Combinamos interfaces conversacionales, acceso seguro a herramientas y logica de agentes para que la IA deje de ser una demo aislada y se vuelva parte real de tu operacion.</p>
-        </div>
-        <div class="card-grid">
-          <article class="feature-card">
-            <div class="icon-badge">01</div>
-            <h3>Chatbots de nueva generacion</h3>
-            <p>Experiencias web, WhatsApp o canales internos con memoria de contexto, tono de marca y handoff a humanos cuando importa.</p>
-          </article>
-          <article class="feature-card">
-            <div class="icon-badge">02</div>
-            <h3>Servidores MCP</h3>
-            <p>Estructuramos accesos a herramientas y datos usando Model Context Protocol para dar capacidad real a tus modelos y agentes.</p>
-          </article>
-          <article class="feature-card">
-            <div class="icon-badge">03</div>
-            <h3>Agentes orientados a objetivos</h3>
-            <p>Automatizamos flujos como prospeccion, soporte, documentacion, onboarding y analisis operativo con trazabilidad.</p>
-          </article>
-        </div>
-      </div>
-    </section>
 
-    <section id="arquitectura">
-      <div class="container split-grid">
-        <article class="info-card">
-          <div class="eyebrow">Arquitectura IA</div>
-          <h2>De una conversacion a una accion concreta</h2>
-          <p>Disenamos stacks donde cada capa tiene un rol claro: interfaz conversacional, enrutamiento, modelo, conectores MCP y agentes especializados.</p>
-          <strong>Mas control, menos prompts fragiles.</strong>
-        </article>
-        <div class="stack">
+          <aside class="hero-card fade-up fade-delay-2">
+            <div class="window-bar">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="panel">
+              <small>Chatbot Orquestador</small>
+              <h3>Responde, enruta y detecta intencion</h3>
+              <p>
+                Convierte conversaciones en acciones utiles con flujos mas
+                naturales, recuperacion de contexto y respuestas personalizadas.
+              </p>
+            </div>
+            <div class="panel">
+              <small>MCP Layer</small>
+              <h3>Herramientas, APIs y datos en un solo protocolo</h3>
+              <p>
+                Conecta CRM, bases de conocimiento, calendarios, ERPs y
+                repositorios sin encadenar integraciones fragiles.
+              </p>
+              <div class="chip-row">
+                <div class="chip">CRM</div>
+                <div class="chip">Docs</div>
+                <div class="chip">Calendario</div>
+                <div class="chip">ERP</div>
+              </div>
+            </div>
+            <div class="panel">
+              <small>Agentes de IA</small>
+              <h3>Planifican, consultan herramientas y ejecutan tareas</h3>
+              <p>
+                Desde calificar leads hasta crear tickets o preparar reportes,
+                tus agentes trabajan con objetivos y supervision.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="servicios">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <div class="eyebrow">Que construimos</div>
+              <h2>Una capa completa de automatizacion conversacional</h2>
+            </div>
+            <p>
+              Combinamos interfaces conversacionales, acceso seguro a
+              herramientas y logica de agentes para que la IA deje de ser una
+              demo aislada y se vuelva parte real de tu operacion.
+            </p>
+          </div>
+          <div class="card-grid">
+            <article class="feature-card">
+              <div class="icon-badge">01</div>
+              <h3>Chatbots de nueva generacion</h3>
+              <p>
+                Experiencias web, WhatsApp o canales internos con memoria de
+                contexto, tono de marca y handoff a humanos cuando importa.
+              </p>
+            </article>
+            <article class="feature-card">
+              <div class="icon-badge">02</div>
+              <h3>Servidores MCP</h3>
+              <p>
+                Estructuramos accesos a herramientas y datos usando Model
+                Context Protocol para dar capacidad real a tus modelos y
+                agentes.
+              </p>
+            </article>
+            <article class="feature-card">
+              <div class="icon-badge">03</div>
+              <h3>Agentes orientados a objetivos</h3>
+              <p>
+                Automatizamos flujos como prospeccion, soporte, documentacion,
+                onboarding y analisis operativo con trazabilidad.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="arquitectura">
+        <div class="container split-grid">
           <article class="info-card">
-            <h3>1. Captura de intencion</h3>
-            <p>El sistema interpreta lo que el usuario necesita, detecta contexto y decide si basta una respuesta o si hace falta ejecutar una tarea.</p>
+            <div class="eyebrow">Arquitectura IA</div>
+            <h2>De una conversacion a una accion concreta</h2>
+            <p>
+              Disenamos stacks donde cada capa tiene un rol claro: interfaz
+              conversacional, enrutamiento, modelo, conectores MCP y agentes
+              especializados.
+            </p>
+            <strong>Mas control, menos prompts fragiles.</strong>
           </article>
-          <article class="info-card">
-            <h3>2. Contexto via MCP</h3>
-            <p>Los modelos consultan documentacion, registros, herramientas o APIs disponibles con una capa consistente y segura.</p>
-          </article>
-          <article class="info-card">
-            <h3>3. Agente con supervision</h3>
-            <p>Un agente puede planificar pasos, invocar herramientas y devolver resultados auditables, dejando trazas utiles para mejorar el flujo.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="container">
-        <div class="section-heading">
-          <div>
-            <div class="eyebrow">Como trabajamos</div>
-            <h2>Implementacion pensada para iterar rapido</h2>
+          <div class="stack">
+            <article class="info-card">
+              <h3>1. Captura de intencion</h3>
+              <p>
+                El sistema interpreta lo que el usuario necesita, detecta
+                contexto y decide si basta una respuesta o si hace falta
+                ejecutar una tarea.
+              </p>
+            </article>
+            <article class="info-card">
+              <h3>2. Contexto via MCP</h3>
+              <p>
+                Los modelos consultan documentacion, registros, herramientas o
+                APIs disponibles con una capa consistente y segura.
+              </p>
+            </article>
+            <article class="info-card">
+              <h3>3. Agente con supervision</h3>
+              <p>
+                Un agente puede planificar pasos, invocar herramientas y
+                devolver resultados auditables, dejando trazas utiles para
+                mejorar el flujo.
+              </p>
+            </article>
           </div>
-          <p>Partimos con un caso de uso acotado, medimos impacto temprano y luego expandimos a nuevos procesos sin rehacer toda la base tecnica.</p>
         </div>
-        <div class="journey">
-          <article class="step">
-            <span>Paso 01</span>
-            <h3>Diagnostico</h3>
-            <p>Mapeamos fricciones, tareas repetitivas y fuentes de datos criticas.</p>
-          </article>
-          <article class="step">
-            <span>Paso 02</span>
-            <h3>Diseno</h3>
-            <p>Definimos prompts, herramientas, permisos, tono y metricas de exito.</p>
-          </article>
-          <article class="step">
-            <span>Paso 03</span>
-            <h3>Integracion</h3>
-            <p>Conectamos tus sistemas con MCP y desplegamos agentes por dominio.</p>
-          </article>
-          <article class="step">
-            <span>Paso 04</span>
-            <h3>Optimizacion</h3>
-            <p>Observamos uso real, afinamos flujos y escalamos los automatismos que funcionan.</p>
-          </article>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section id="planes">
-      <div class="container">
-        <div class="section-heading">
-          <div>
-            <div class="eyebrow">Planes</div>
-            <h2>Formatos para despegar y escalar</h2>
+      <section>
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <div class="eyebrow">Como trabajamos</div>
+              <h2>Implementacion pensada para iterar rapido</h2>
+            </div>
+            <p>
+              Partimos con un caso de uso acotado, medimos impacto temprano y
+              luego expandimos a nuevos procesos sin rehacer toda la base
+              tecnica.
+            </p>
           </div>
-          <p>Elige una implementacion inicial o una solucion integral. Podemos empezar con un chatbot especifico y evolucionar luego a una red de agentes.</p>
-        </div>
-        <div class="card-grid">
-          <article class="pricing-card">
-            <h3>Launch Bot</h3>
-            <p>Ideal para una primera experiencia conversacional enfocada en leads o soporte.</p>
-            <div class="price">USD 790 <span>/ proyecto base</span></div>
-            <div class="list">
-              <div>Landing chatbot conectada</div>
-              <div>Base de conocimiento inicial</div>
-              <div>Panel de mejoras prioritarias</div>
-            </div>
-            <a class="button button-secondary" href="#contacto">Quiero empezar</a>
-          </article>
-          <article class="pricing-card featured">
-            <h3>AI Operations</h3>
-            <p>Para equipos que necesitan MCP, automatizacion y agentes en produccion.</p>
-            <div class="price">USD 1.990 <span>/ implementacion</span></div>
-            <div class="list">
-              <div>Chatbot multicanal</div>
-              <div>Servidor MCP y permisos</div>
-              <div>Agente operativo con herramientas</div>
-            </div>
-            <a class="button button-primary" href="#contacto">Solicitar propuesta</a>
-          </article>
-          <article class="pricing-card">
-            <h3>Custom Agent Stack</h3>
-            <p>Arquitectura a medida para procesos complejos, equipos y multiples fuentes.</p>
-            <div class="price">Custom <span>/ segun alcance</span></div>
-            <div class="list">
-              <div>Diseno por casos de uso</div>
-              <div>Agentes especializados</div>
-              <div>Seguimiento y optimizacion continua</div>
-            </div>
-            <a class="button button-secondary" href="#contacto">Hablar con ventas</a>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="container card-grid">
-        <article class="testimonial">
-          <h3>"Pasamos de responder preguntas a ejecutar tareas."</h3>
-          <p>La diferencia no fue solo el chatbot: fue conectar el modelo con contexto y herramientas reales para que tomara accion con trazabilidad.</p>
-          <strong>Equipo de operaciones digitales</strong>
-        </article>
-        <article class="testimonial">
-          <h3>"MCP nos ordeno el caos de integraciones."</h3>
-          <p>Centralizamos acceso a documentos, CRM y agenda con una capa mas mantenible y lista para nuevos agentes.</p>
-          <strong>Lider de innovacion</strong>
-        </article>
-        <article class="testimonial">
-          <h3>"La implementacion se sintio incremental, no invasiva."</h3>
-          <p>Partimos con un flujo puntual y al mes ya teniamos automatizaciones adicionales sin rehacer todo el sistema.</p>
-          <strong>Founder SaaS B2B</strong>
-        </article>
-      </div>
-    </section>
-
-    <section id="contacto">
-      <div class="container">
-        <div class="cta-box">
-          <div>
-            <div class="eyebrow">Hablemos</div>
-            <h2>Activa una landing con IA que venda, atienda y ejecute.</h2>
-            <p>Si ya tienes una idea o un proceso que quieras automatizar, podemos transformarlo en una primera experiencia lista para validar rapido.</p>
+          <div class="journey">
+            <article class="step">
+              <span>Paso 01</span>
+              <h3>Diagnostico</h3>
+              <p>
+                Mapeamos fricciones, tareas repetitivas y fuentes de datos
+                criticas.
+              </p>
+            </article>
+            <article class="step">
+              <span>Paso 02</span>
+              <h3>Diseno</h3>
+              <p>
+                Definimos prompts, herramientas, permisos, tono y metricas de
+                exito.
+              </p>
+            </article>
+            <article class="step">
+              <span>Paso 03</span>
+              <h3>Integracion</h3>
+              <p>
+                Conectamos tus sistemas con MCP y desplegamos agentes por
+                dominio.
+              </p>
+            </article>
+            <article class="step">
+              <span>Paso 04</span>
+              <h3>Optimizacion</h3>
+              <p>
+                Observamos uso real, afinamos flujos y escalamos los
+                automatismos que funcionan.
+              </p>
+            </article>
           </div>
-          <a class="button button-primary" href="mailto:hola@orbitai.dev">hola@orbitai.dev</a>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
 
-  <footer>
-    <div class="container">Orbit AI | Chatbots, MCP y agentes de IA para equipos que quieren operar mas rapido.</div>
-  </footer>
-</body>
+      <section id="planes">
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <div class="eyebrow">Planes</div>
+              <h2>Formatos para despegar y escalar</h2>
+            </div>
+            <p>
+              Elige una implementacion inicial o una solucion integral. Podemos
+              empezar con un chatbot especifico y evolucionar luego a una red de
+              agentes.
+            </p>
+          </div>
+          <div class="card-grid">
+            <article class="pricing-card">
+              <h3>Launch Bot</h3>
+              <p>
+                Ideal para una primera experiencia conversacional enfocada en
+                leads o soporte.
+              </p>
+              <div class="price">USD 790 <span>/ proyecto base</span></div>
+              <div class="list">
+                <div>Landing chatbot conectada</div>
+                <div>Base de conocimiento inicial</div>
+                <div>Panel de mejoras prioritarias</div>
+                <div>Linea de prueba</div>
+              </div>
+              <a class="button button-secondary" href="#contacto"
+                >Quiero empezar</a
+              >
+            </article>
+            <article class="pricing-card featured">
+              <h3>AI Operations</h3>
+              <p>
+                Para equipos que necesitan MCP, automatizacion y agentes en
+                produccion.
+              </p>
+              <div class="price">USD 1.990 <span>/ implementacion</span></div>
+              <div class="list">
+                <div>Chatbot multicanal</div>
+                <div>Servidor MCP y permisos</div>
+                <div>Agente operativo con herramientas</div>
+              </div>
+              <a class="button button-primary" href="#contacto"
+                >Solicitar propuesta</a
+              >
+            </article>
+            <article class="pricing-card">
+              <h3>Custom Agent Stack</h3>
+              <p>
+                Arquitectura a medida para procesos complejos, equipos y
+                multiples fuentes.
+              </p>
+              <div class="price">Custom <span>/ segun alcance</span></div>
+              <div class="list">
+                <div>Diseno por casos de uso</div>
+                <div>Agentes especializados</div>
+                <div>Seguimiento y optimizacion continua</div>
+              </div>
+              <a class="button button-secondary" href="#contacto"
+                >Hablar con ventas</a
+              >
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="container card-grid">
+          <article class="testimonial">
+            <h3>"Pasamos de responder preguntas a ejecutar tareas."</h3>
+            <p>
+              La diferencia no fue solo el chatbot: fue conectar el modelo con
+              contexto y herramientas reales para que tomara accion con
+              trazabilidad.
+            </p>
+            <strong>Equipo de operaciones digitales</strong>
+          </article>
+          <article class="testimonial">
+            <h3>"MCP nos ordeno el caos de integraciones."</h3>
+            <p>
+              Centralizamos acceso a documentos, CRM y agenda con una capa mas
+              mantenible y lista para nuevos agentes.
+            </p>
+            <strong>Lider de innovacion</strong>
+          </article>
+          <article class="testimonial">
+            <h3>"La implementacion se sintio incremental, no invasiva."</h3>
+            <p>
+              Partimos con un flujo puntual y al mes ya teniamos
+              automatizaciones adicionales sin rehacer todo el sistema.
+            </p>
+            <strong>Founder SaaS B2B</strong>
+          </article>
+        </div>
+      </section>
+
+      <section id="contacto">
+        <div class="container">
+          <div class="cta-box">
+            <div>
+              <div class="eyebrow">Hablemos</div>
+              <h2>Activa una landing con IA que venda, atienda y ejecute.</h2>
+              <p>
+                Si ya tienes una idea o un proceso que quieras automatizar,
+                podemos transformarlo en una primera experiencia lista para
+                validar rapido.
+              </p>
+            </div>
+            <a class="button button-primary" href="mailto:hola@orbitai.dev"
+              >hola@orbitai.dev</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        Orbit AI | Chatbots, MCP y agentes de IA para equipos que quieren operar
+        mas rapido.
+      </div>
+    </footer>
+  </body>
 </html>
